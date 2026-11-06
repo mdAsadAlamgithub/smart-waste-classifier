@@ -1,33 +1,49 @@
 import json
+import threading
 import numpy as np
-import tensorflow as tf
 from PIL import Image, ImageOps
 import config
 
-_model = None
+try:                                            # lightweight runtime (server)
+    from ai_edge_litert.interpreter import Interpreter
+except ImportError:
+    try:
+        from tflite_runtime.interpreter import Interpreter
+    except ImportError:                         # your Windows PC
+        import tensorflow as tf
+        Interpreter = tf.lite.Interpreter
+
+_interp = None
 _classes = None
+_lock = threading.Lock()                        # the interpreter is not thread-safe
 
 
 def load():
-    """Load the model once and reuse it for every request."""
-    global _model, _classes
-    if _model is None:
-        _model = tf.keras.models.load_model(config.MODEL_PATH)
+    global _interp, _classes
+    if _interp is None:
+        _interp = Interpreter(model_path=config.TFLITE_PATH)
+        _interp.allocate_tensors()
         with open(config.CLASSES_PATH) as f:
             _classes = json.load(f)
-    return _model, _classes
+    return _interp, _classes
 
 
 def preprocess(path):
     img = Image.open(path)
-    img = ImageOps.exif_transpose(img)        # fixes rotated phone photos
+    img = ImageOps.exif_transpose(img)
     img = img.convert("RGB").resize((224, 224))
     # No extra normalization: the model has its own Rescaling layer.
     return np.expand_dims(np.array(img, dtype="float32"), axis=0)
 
 
 def predict(path, top_k=3):
-    model, classes = load()
-    probs = model.predict(preprocess(path), verbose=0)[0]
+    interp, classes = load()
+    x = preprocess(path)
+    with _lock:
+        inp = interp.get_input_details()[0]
+        out = interp.get_output_details()[0]
+        interp.set_tensor(inp["index"], x)
+        interp.invoke()
+        probs = interp.get_tensor(out["index"])[0].copy()
     order = np.argsort(probs)[::-1][:top_k]
     return [{"label": classes[i], "confidence": float(probs[i])} for i in order]

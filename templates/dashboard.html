@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · EcoSort AI{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3 mb-3">Dashboard</h1>
+
+  <div class="row g-3 mb-3">
+    {% for label, value, icon in [
+      ("Total classifications", stats.total, "bi-images"),
+      ("Most common class", stats.top_class|capitalize, "bi-trophy"),
+      ("Average confidence", stats.avg_confidence ~ "%", "bi-bullseye"),
+      ("Uncertain results", stats.statuses.get('uncertain', 0), "bi-question-circle")] %}
+    <div class="col-6 col-lg-3">
+      <div class="soft-card p-3 h-100">
+        <div class="d-flex justify-content-between text-secondary small">
+          <span>{{ label }}</span><i class="bi {{ icon }} text-success"></i>
+        </div>
+        <div class="h3 fw-bold mb-0 mt-1">{{ value }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-5">
+      <div class="soft-card p-3 h-100">
+        <div class="text-secondary small">User-reported accuracy</div>
+        {% if stats.reviewed %}
+          <div class="h2 fw-bold mb-0">{{ stats.feedback_acc }}%</div>
+          <div class="small text-secondary">{{ stats.correct }} of {{ stats.reviewed }} reviewed predictions marked correct</div>
+        {% else %}
+          <div class="h2 fw-bold mb-0">—</div>
+          <div class="small text-secondary">No feedback yet</div>
+        {% endif %}
+        <div class="small text-secondary mt-2">Based on voluntary feedback, so it is only an indication and not a tested accuracy.</div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="soft-card p-3 h-100">
+        <div class="fw-semibold mb-2">Most reported mistakes</div>
+        {% for m in stats.mistakes %}
+          <div class="d-flex justify-content-between small py-1 border-bottom">
+            <span>{{ m.predicted|capitalize }} <i class="bi bi-arrow-right"></i> {{ m.actual|capitalize }}</span>
+            <span class="badge text-bg-secondary">{{ m.n }}</span>
+          </div>
+        {% else %}
+          <div class="small text-secondary">No corrections reported yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if stats.total == 0 %}
+    <div class="alert alert-info">No data yet. Classify a few images first.</div>
+  {% else %}
+  <div class="row g-3">
+    <div class="col-md-5"><div class="soft-card p-3"><h2 class="h6">Category distribution</h2><canvas id="pieChart"></canvas></div></div>
+    <div class="col-md-7"><div class="soft-card p-3"><h2 class="h6">Count per category</h2><canvas id="barChart"></canvas></div></div>
+    <div class="col-12"><div class="soft-card p-3"><h2 class="h6">Daily classifications</h2><canvas id="lineChart"></canvas></div></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>const STATS = {{ stats|tojson }};</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

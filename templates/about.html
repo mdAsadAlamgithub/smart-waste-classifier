@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}About · EcoSort AI{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+  <h1 class="section-title">About this project</h1>
+  <p class="text-secondary">EcoSort AI is a web application that classifies waste from photos using computer vision and recommends how to dispose of it.</p>
+
+  <div class="row g-3 my-2">
+    {% for icon, t, d in [
+      ("bi-cpu", "AI model", "MobileNetV2 with transfer learning, built with TensorFlow/Keras."),
+      ("bi-server", "Backend", "Python and Flask handle uploads, prediction and the admin area."),
+      ("bi-database", "Data", "SQLite stores predictions, which feed the dashboard charts.")] %}
+    <div class="col-md-4"><div class="soft-card p-3 h-100">
+      <i class="bi {{ icon }} fs-3 text-success"></i>
+      <h2 class="h6 mt-2">{{ t }}</h2><p class="small text-secondary mb-0">{{ d }}</p>
+    </div></div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h5 mt-4">Limitations</h2>
+  <ul class="text-secondary">
+    <li>It predicts one dominant item per photo and cannot separate several items.</li>
+    <li>It only knows the categories it was trained on. Unknown items may be mislabeled.</li>
+    <li>Glass, metal and plastic can look similar, so accuracy varies with lighting and background.</li>
+    <li>Disposal advice is general and not a substitute for local rules.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">Privacy</h2>
+  <p class="text-secondary">Uploaded photos and their predictions are stored on the server for usage statistics and are visible only to administrators. Please do not upload images showing people or personal information.</p>
+</div>
+{% endblock %}

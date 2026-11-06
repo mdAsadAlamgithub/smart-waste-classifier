@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}History · EcoSort AI{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="section-title h3 mb-0">History <small class="text-secondary fs-6">({{ total }} results)</small></h1>
+    <a href="{{ url_for('export_csv') }}" class="btn btn-outline-brand btn-sm"><i class="bi bi-download"></i> Export CSV</a>
+  </div>
+
+  <form method="get" class="soft-card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-6 col-md-4">
+        <label class="form-label small mb-1">Category</label>
+        <select name="label" class="form-select">
+          <option value="">All</option>
+          {% for l in labels %}<option value="{{ l }}" {% if l == label %}selected{% endif %}>{{ l|capitalize }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-4">
+        <label class="form-label small mb-1">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All</option>
+          {% for s, t in [("ok", "OK"), ("uncertain", "Uncertain"), ("other", "Other")] %}
+            <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4 d-flex gap-2">
+        <button class="btn btn-brand flex-fill" type="submit">Filter</button>
+        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="soft-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="d-none d-md-table-cell">#</th><th>Image</th><th>Prediction</th>
+            <th class="d-none d-sm-table-cell">Status</th><th class="d-none d-md-table-cell">Feedback</th>
+            <th class="d-none d-md-table-cell">Time</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td class="d-none d-md-table-cell">{{ r.id }}</td>
+            <td><img src="{{ url_for('static', filename='uploads/' + r.image_path) }}" width="56" height="56"
+                     style="object-fit:cover" class="rounded" alt="" loading="lazy"></td>
+            <td>
+              <div class="fw-semibold">{{ CAT[r.predicted_class].emoji if r.predicted_class in CAT }} {{ r.predicted_class|capitalize }}</div>
+              <div class="small text-secondary">{{ "%.1f"|format(r.confidence * 100) }}%
+                <span class="d-md-none">· {{ r.local_time }}</span></div>
+            </td>
+            <td class="d-none d-sm-table-cell">
+              {% if r.status == 'ok' %}<span class="badge text-bg-success">OK</span>
+              {% elif r.status == 'uncertain' %}<span class="badge text-bg-warning">Uncertain</span>
+              {% else %}<span class="badge text-bg-secondary">Other</span>{% endif %}
+            </td>
+            <td class="d-none d-md-table-cell small">
+              {% if r.feedback_correct == 1 %}<span class="text-success">👍 Correct</span>
+              {% elif r.feedback_correct == 0 %}<span class="text-danger">👎 Actually {{ r.corrected_label|capitalize }}</span>
+              {% else %}<span class="text-secondary">—</span>{% endif %}
+            </td>
+            <td class="d-none d-md-table-cell small">{{ r.local_time }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('delete_item', pid=r.id) }}"
+                    onsubmit="return confirm('Delete this prediction and its image?');">
+                <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Delete"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text-secondary py-5">No predictions found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav class="mt-3 d-flex justify-content-between align-items-center">
+    <a class="btn btn-outline-brand btn-sm {% if page <= 1 %}disabled{% endif %}"
+       href="{{ url_for('history', page=page-1, label=label, status=status) }}">← Newer</a>
+    <span class="text-secondary small">Page {{ page }} of {{ pages }}</span>
+    <a class="btn btn-outline-brand btn-sm {% if page >= pages %}disabled{% endif %}"
+       href="{{ url_for('history', page=page+1, label=label, status=status) }}">Older →</a>
+  </nav>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Waste guide · EcoSort AI{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title">Waste guide</h1>
+  <p class="text-secondary mb-4">Quick do's and don'ts for each category. Local rules may differ.</p>
+  <div class="row g-3">
+    {% for c in CATEGORIES %}
+    <div class="col-md-6 col-lg-4">
+      <div class="soft-card cat-card cat-card-lg" style="--c: {{ c.color }}">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="emoji">{{ c.emoji }}</span><h2 class="h5 mb-0">{{ c.title }}</h2>
+        </div>
+        <p class="small text-secondary">{{ c.examples }}</p>
+        <div class="fw-semibold text-success small">Do</div>
+        <ul class="list-ok small">{% for d in c.dos %}<li>{{ d }}</li>{% endfor %}</ul>
+        <div class="fw-semibold text-danger small">Don't</div>
+        <ul class="list-no small mb-0">{% for d in c.donts %}<li>{{ d }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="soft-card p-3 mt-4">
+    <strong>Special waste:</strong> <span class="text-secondary">medicines, batteries, electronics and chemicals should not go in regular bins. Use your local hazardous or e-waste collection.</span>
+  </div>
+</div>
+{% endblock %}

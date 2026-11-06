@@ -1,31 +1,24 @@
-# Python virtual environment
 venv/
 .venv/
-
-# Dataset
-dataset_raw/
-dataset_processed/
-
-# Model files
-*.keras
-*.h5
-*.tflite
-
-# Uploaded images
-static/uploads/*
-
-# Python cache
 __pycache__/
 *.py[cod]
-
-# Database
-database/*.db
-
-# Environment variables
 .env
-
-# Jupyter
+.vscode/
 .ipynb_checkpoints/
 
-# IDE
-.vscode/
+# datasets and personal test photos
+dataset/
+dataset_raw/
+dataset_extra/
+dataset_processed/
+my_photos/
+real_test/
+
+# big training files (the .tflite model IS committed)
+*.keras
+*.h5
+
+# runtime data (private)
+database/*.db
+static/uploads/*
+!static/uploads/.gitkeep
