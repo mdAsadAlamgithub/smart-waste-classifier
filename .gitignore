@@ -1,0 +1,31 @@
+# Python virtual environment
+venv/
+.venv/
+
+# Dataset
+dataset_raw/
+dataset_processed/
+
+# Model files
+*.keras
+*.h5
+*.tflite
+
+# Uploaded images
+static/uploads/*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Database
+database/*.db
+
+# Environment variables
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/

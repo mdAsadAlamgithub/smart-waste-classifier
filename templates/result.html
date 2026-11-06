@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-5">
+            <img class="img-fluid rounded mb-3"
+                 src="{{ url_for('static', filename='uploads/' + image_name) }}" alt="Uploaded image">
+          </div>
+          <div class="col-md-7">
+            {% if status == "ok" %}
+              <span class="badge bg-success mb-2">Prediction</span>
+              <h2 class="h3">{{ rec.title }}</h2>
+              <p class="text-muted">Confidence: {{ "%.1f"|format(top.confidence * 100) }}%</p>
+            {% elif status == "uncertain" %}
+              <span class="badge bg-warning text-dark mb-2">Low confidence</span>
+              <h2 class="h3">{{ rec.title }}</h2>
+              <p class="text-muted">Best guess was {{ top.label }} at
+                {{ "%.1f"|format(top.confidence * 100) }}%, below the {{ threshold }}% threshold.</p>
+            {% else %}
+              <span class="badge bg-secondary mb-2">Unsupported item</span>
+              <h2 class="h3">{{ rec.title }}</h2>
+            {% endif %}
+            <p>{{ rec.advice }}</p>
+            <small class="text-muted">{{ disclaimer }}</small>
+          </div>
+        </div>
+        <hr>
+        <h3 class="h6">Top predictions</h3>
+        {% for r in results %}
+          <div class="mb-2">
+            <div class="d-flex justify-content-between">
+              <span>{{ r.label|capitalize }}</span>
+              <span>{{ "%.1f"|format(r.confidence * 100) }}%</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar bg-success" style="width: {{ r.confidence * 100 }}%"></div>
+            </div>
+          </div>
+        {% endfor %}
+        <a href="{{ url_for('index') }}" class="btn btn-outline-success mt-3">Classify another</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
